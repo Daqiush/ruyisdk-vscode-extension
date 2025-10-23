@@ -5,9 +5,8 @@
  * VS Code command: `ruyi.venv.create`
  *
  * Responsibilities:
- * - Create a new Ruyi virtual environment via features/createVenv service
- * - Show progress and report result
- * - Visual helper to pick profile/toolchain/emulator and input name/path
+ * - Create a new Ruyi virtual environment via features/createVenv service.
+ * - Visual helper to pick profile/toolchain/emulator and input name/path.
  */
 
 import paths from 'path'
