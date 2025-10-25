@@ -11,8 +11,8 @@
  * - Caches results to minimize CLI calls
  */
 
-import { DEFAULT_CMD_TIMEOUT_MS, VALID_PACKAGE_CATEGORIES } from '../../common/constants'
-import { ruyiList } from '../../common/RuyiInvoker'
+import { VALID_PACKAGE_CATEGORIES } from '../../common/constants'
+import ruyi from '../../common/ruyi'
 
 export type PackageCategory = typeof VALID_PACKAGE_CATEGORIES[number] | 'unknown'
 
@@ -61,7 +61,7 @@ export class PackageService {
     }
 
     try {
-      const listResult = await ruyiList(['--name-contains', '\'\''], { timeout: DEFAULT_CMD_TIMEOUT_MS })
+      const listResult = await ruyi.list()
       if (listResult.code !== 0) {
         console.error('Failed to list packages:', listResult.stderr)
         return []
