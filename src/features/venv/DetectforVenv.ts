@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateVenv module
+ * RuyiSDK VS Code Extension - Venv Module - Venv Detection Utility
  *
  * Provides helpers used by the commands layer:
- * - detectVenv(): Detece Ruyi venvs in the current workspace
+ * - detectVenv(): Detect Ruyi venvs in the current workspace
  * Iterates through 1st and 2nd level subdirectories to find venvs
  * If a subdirectory contains a "bin" subdirectory
  * which contains a "ruyi-activate" file,
@@ -16,7 +16,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { getWorkspaceFolderPath } from '../../common/utils'
+import { getWorkspaceFolderPath } from '../../common/helpers'
 
 export function detectVenv(): string[][] {
   const foundVenvs: string[][] = []

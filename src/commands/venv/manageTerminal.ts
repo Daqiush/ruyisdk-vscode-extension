@@ -1,41 +1,24 @@
 // SPDX-License-Identifier: Apache-2.0
-/**
- * CreateCommand
- *
- * VS Code command: `ruyi.venv.switch`
- *
- * Responsibilities:
- * - Switch to a different Ruyi virtual environment or deactivate the current one
- * - Implementated by invoking `detectVenv` command to let user pick a venv to operate
- */
 
 import * as vscode from 'vscode'
 
-// import {isSupportedPlatform} from '../common/utils';
-// import {createVenv} from '../features/venv/CreateVenv';
-
-export let currentVenv: string | undefined
 let ruyiTerminal: vscode.Terminal | undefined
+export let currentVenv: string | undefined
 
-export default function registerSwitchFromVenvsCommand(
-  context: vscode.ExtensionContext) {
-  const disposable = vscode.commands.registerCommand('ruyi.venv.switch', async () => {
-    // Invoke detectVenv command to let user pick a venv to operate.
-    const pickedVenv = await vscode.commands.executeCommand('ruyi.venv.detect', 'switch') as
-      { label: string, description: string, rawPath: string } | undefined
-    if (!pickedVenv) {
-      return
-    }
-    // Manage the Ruyi terminal for venv activation/deactivation
-    const venvPath = `./${pickedVenv.rawPath}`
-    manageRuyiTerminal(venvPath === currentVenv ? null : venvPath)
-  })
-  context.subscriptions.push(disposable)
+export default function registerTerminalHandlerCommand(context: vscode.ExtensionContext) {
+  context.subscriptions.push(
+    vscode.window.onDidCloseTerminal((closedTerminal) => {
+      if (closedTerminal === ruyiTerminal) {
+        ruyiTerminal = undefined
+        currentVenv = undefined
+        vscode.window.showInformationMessage('Ruyi Venv Terminal closed, venv deactivated.')
+      }
+    }),
+  )
 }
 
 // Get or create the Ruyi terminal for venv activation, assigning a venv path to it.
-// This function is not defined more globally because only this command needs it currently.
-function manageRuyiTerminal(venvPath: string | null) {
+export function manageRuyiTerminal(venvPath: string | null) {
   if (!ruyiTerminal) {
     if (venvPath) {
       ruyiTerminal = vscode.window.createTerminal({ name: 'Ruyi Venv Terminal' })

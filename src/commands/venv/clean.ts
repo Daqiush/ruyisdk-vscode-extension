@@ -1,26 +1,25 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateCommand
+ * Venv Clean Command
  *
- * VS Code command: `ruyi.venv.clean`
+ * VS Code command ID: `ruyi.venv.clean`
  *
  * Responsibilities:
- * - Delete a non-active Ruyi virtual environment
+ * - Delete a non-active Ruyi virtual environment.
  */
 
 import * as path from 'path'
 import * as vscode from 'vscode'
 
-import { currentVenv } from './switchFromVenvs'
+import { getWorkspaceFolderPath } from '../../common/helpers'
 
-// import {isSupportedPlatform} from '../common/utils';
-// import {createVenv} from '../features/venv/CreateVenv';
+import { currentVenv } from './manageTerminal'
 
 export default function registerCleanADeactivatedVenvCommand(
   context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('ruyi.venv.clean', async () => {
     // Invoke detectVenv command to let user pick a venv to operate.
-    const pickedVenv = await vscode.commands.executeCommand('ruyi.venv.detect', 'switch') as
+    const pickedVenv = await vscode.commands.executeCommand('ruyi.venv.detect', 'clean') as
       { label: string, description: string, rawPath: string } | undefined
     if (!pickedVenv) {
       return
@@ -42,11 +41,7 @@ export default function registerCleanADeactivatedVenvCommand(
 
       try {
         // Construct absolute path
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0]
-        if (!workspaceFolder) {
-          throw new Error('No workspace folder open')
-        }
-        const workspacePath = workspaceFolder.uri.fsPath
+        const workspacePath = getWorkspaceFolderPath()
         let cleanPath = venvPath
         if (cleanPath.startsWith('./')) {
           cleanPath = cleanPath.substring(2)

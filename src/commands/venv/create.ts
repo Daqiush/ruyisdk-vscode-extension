@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateCommand
+ * Venv Create Command
  *
- * VS Code command: `ruyi.venv.create`
+ * VS Code command ID: `ruyi.venv.create`
  *
  * Responsibilities:
  * - Create a new Ruyi virtual environment via features/createVenv service.
- * - Visual helper to pick profile/toolchain/emulator and input name/path.
+ * - Visual helper to pick profile, toolchain, emulator and input name and path.
  */
 
 import paths from 'path'
 import * as vscode from 'vscode'
 
-import { createVenv } from '../features/venv/CreateVenv'
-import { getEmulators } from '../features/venv/GetEmulators'
-import { getProfiles } from '../features/venv/GetProfiles'
-import { getToolchains } from '../features/venv/GetToolchains'
+import { createVenv } from '../../features/venv/CreateVenv'
+import { getEmulators } from '../../features/venv/GetEmulators'
+import { getProfiles } from '../../features/venv/GetProfiles'
+import { getToolchains } from '../../features/venv/GetToolchains'
 
 export default function registerCreateNewVenvCommand(
   context: vscode.ExtensionContext) {

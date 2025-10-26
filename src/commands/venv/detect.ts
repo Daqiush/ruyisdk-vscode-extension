@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateCommand
+ * Venv Detect Command
  *
- * VS Code command: `ruyi.venv.detect`
+ * VS Code command ID: `ruyi.venv.detect`
  *
  * Responsibilities:
  * - Detect all Ruyi venv-s in the current workspace via features/detectVenvs service.
- * - Automatically run upon extension activation to populate venv list.
  * - Also automatically run before any venv is activated via `ruyi.venv.switch` command.
  * - Also automatically run before any venv is deleted via `ruyi.venv.clean` command.
  * - Can be run manually to just peek detected venvs.
@@ -16,15 +15,18 @@
 
 import * as vscode from 'vscode'
 
-import { detectVenv } from '../features/venv/DetectforVenv'
+import { detectVenv } from '../../features/venv/DetectforVenv'
 
 export default function registerDetectAllVenvCommand(
   context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand(
-    'ruyi.venv.detect', async (triggerMethod: string) => {
+    'ruyi.venv.detect', async (triggerMethod: string, active: boolean = true) => {
       const venvs = detectVenv()
       if (venvs.length === 0) {
-        vscode.window.showInformationMessage('No Ruyi venvs detected in the current workspace.')
+        if (active) {
+          vscode.window.showInformationMessage('No Ruyi venvs detected in the current workspace.')
+        }
+        return
       }
       else {
         const shownVenvList = venvs.map(v => ({
