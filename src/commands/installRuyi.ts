@@ -12,12 +12,12 @@
  */
 
 import * as cp from 'child_process'
+import type { ExecException } from 'node:child_process'
 import * as util from 'util'
 import * as vscode from 'vscode'
 
-import { LONG_CMD_TIMEOUT_MS } from '../common/constants'
-import { ruyiVersion, resolveRuyi } from '../common/RuyiInvoker'
-import { formatExecError } from '../common/utils'
+import ruyi, { resolveRuyi } from '../common/ruyi'
+import { promptForTelemetryConfiguration } from '../features/telemetry/TelemetryService'
 
 const execAsync = util.promisify(cp.exec)
 
@@ -60,7 +60,7 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
 
     const existingRuyi = await resolveRuyi()
     if (existingRuyi) {
-      const version = await ruyiVersion()
+      const version = await ruyi.version()
       if (version) {
         vscode.window.showInformationMessage(`Ruyi already installed: ${version}`)
         return
@@ -87,17 +87,19 @@ export default function registerInstallCommand(context: vscode.ExtensionContext)
           title: `Installing Ruyi via ${name}...`,
           cancellable: false,
         }, async () => {
-          await execAsync(cmd, { timeout: LONG_CMD_TIMEOUT_MS })
+          await execAsync(cmd, { timeout: 60_000 })
         })
 
-        const version = await ruyiVersion()
+        const version = await ruyi.version()
         if (version) {
           await showInstallSuccess(name, version)
+          await promptForTelemetryConfiguration()
           return
         }
       }
-      catch (error) {
-        const errorMessage = formatExecError(error)
+      catch (e) {
+        const error = e as ExecException
+        const errorMessage = error.stderr || error.message || String(error)
         const isLastCommand = i === commands.length - 1
         const continueMessage = isLastCommand ? 'Will show manual installation options.' : `Trying ${commands[i + 1]?.name} instead...`
         await showInstallError(name, errorMessage, continueMessage)
