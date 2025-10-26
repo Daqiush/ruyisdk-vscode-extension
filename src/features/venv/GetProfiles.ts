@@ -1,19 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateVenv - GetProfiles module
+ * RuyiSDK VS Code Extension - Venv Module - Venv Creating Utility - Profiles Fetching Helper Functions
  *
  * Provides helpers used by the commands layer:
  * - readStdoutP(stdout): convert ruyi list output to a dictionary, used by getProfiles()
  * - getProfiles(): Get all Ruyi profiles and return as a dictionary (deduplicated)
  */
 
-import * as cp from 'child_process'
-import * as util from 'util'
-
-import { SHORT_CMD_TIMEOUT_MS } from '../../common/constants'
-import { formatExecError } from '../../common/utils'
-
-const execAsync = util.promisify(cp.exec)
+import ruyi from '../../common/ruyi'
 
 export function readStdoutP(stdout: string): Record<string, string> {
   const dict: Record<string, string> = {}
@@ -30,20 +24,13 @@ export function readStdoutP(stdout: string): Record<string, string> {
 
 export async function getProfiles(): Promise<{ [key: string]: string }> {
   let profiles: { [key: string]: string } = {}
-  try {
-    const { stdout, stderr } = await execAsync(
-      `ruyi list profiles`, { timeout: SHORT_CMD_TIMEOUT_MS },
-    )
-    if (stderr) {
-      throw new Error(`Error getting profiles: ${stderr}`)
-    }
-    else {
-      profiles = readStdoutP(stdout)
-    }
+  const result = await ruyi.getProfiles()
+  if (result.code == 0) {
+    profiles = readStdoutP(result.stdout)
   }
-  catch (e: unknown) {
+  else {
     // return error message
-    throw new Error(`Failed to get profiles: ${formatExecError(e)}`)
+    throw new Error(`Failed to get profiles: ${result.stderr}`)
   }
   return profiles
 }

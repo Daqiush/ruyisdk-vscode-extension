@@ -1,29 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateVenv - GetToolchains module
+ * RuyiSDK VS Code Extension - Venv Module - Venv Creating Utility - Toolchains Fetching Helper Functions
  *
  * Provides helpers used by the commands layer:
  * - class Toolchain: represent a Ruyi toolchain
  *   the Object has the following fields:
  *   name, installed (boolean), version, latest(boolean), slug
- * - readStdoutT(stdout): convert ruyi list output to a Object-array
+ * - parseStdoutT(stdout): convert json output to a Dict-array
+ *   useless info lines are filtered out
+ *   kept fields are: name, vers/semver, vers/pm/metadata/slug, vers/remarks. They locates in different levels.
  *   used by getToolchains()
- *   the stdout contains lines like:
-     * toolchain/`name1`
-  - `version1` (latest)
-  - `version2` slug: `slug`
-     * toolchain/`name2`
-  - `version1` (latest, installed)
  * - getToolchains(): Get all Ruyi toolchains and return as a Object-array
  */
-
-import * as cp from 'child_process'
-import * as util from 'util'
-
-import { SHORT_CMD_TIMEOUT_MS } from '../../common/constants'
-import { formatExecError } from '../../common/utils'
-
-const execAsync = util.promisify(cp.exec)
+import ruyi from '../../common/ruyi'
 
 interface Toolchain {
   name: string
@@ -33,54 +22,51 @@ interface Toolchain {
   slug: string | null
 }
 
-export function readStdoutT(stdout: string): Toolchain[] {
-  const arrayT: Toolchain[] = []
-  const lines = stdout.split(/\r?\n/)
-  let name = ''
-  for (const line of lines) {
-    if (!line.trim()) continue // skip empty lines
-    if (line.startsWith('* toolchain/')) {
-      // New toolchain entry
-      name = line.replace('* toolchain/', '').trim()
-    }
-    else {
-      // Version line
-      if (!name) continue // skip if no toolchain name found yet
-      const cur = line.replace('- ', '').trim()
-      // The version field elongates to the first space
-      const versionMatch = cur.match(/^([^\s(]+)/)
-      const version = versionMatch ? versionMatch[1] : ''
-      const installed = cur.includes('installed')
-      const latest = cur.includes('latest')
-      const slugMatch = cur.match(/slug:\s*([^\s]+)/)
-      const slug = slugMatch ? slugMatch[1] : null
+export function parseStdoutT(text: string): Toolchain[] {
+  // Split the text into segments based on single newlines
+  const segments = text
+    .split('\n')
+    .map(seg => seg.trim())
+    .filter(seg => seg.length > 0)
 
-      if (versionMatch) {
-        const currentToolchain = { name: name, version: version,
-          installed: installed, latest: latest, slug: slug }
-        arrayT.push(currentToolchain)
+  const result: Toolchain[] = []
+
+  for (const seg of segments) {
+    try {
+      const obj = JSON.parse(seg)
+      const name = obj.name || ''
+      // vers is an array to be iterated
+      if (Array.isArray(obj.vers)) {
+        for (const v of obj.vers) {
+          const semver = v.semver || ''
+          // Concat the array of remarks into a single string
+          const remarks = Array.isArray(v.remarks)
+            ? v.remarks.join(', ')
+            : (v.remarks || '')
+          const slug = v.pm && v.pm.metadata ? v.pm.metadata.slug || null : null
+          const installed = remarks.includes('installed')
+          const latest = remarks.includes('latest')
+          result.push({ name, version: semver, installed, latest, slug })
+        }
       }
     }
+    catch (e) {
+      // Output JSON parse errors
+      console.error('JSON parse error:', e)
+    }
   }
-  return arrayT
+
+  return result
 }
 
 export async function getToolchains(): Promise<Toolchain[]> {
   let toolchains: Toolchain[] = []
-  try {
-    const { stdout, stderr } = await execAsync(
-      `ruyi list --category-is toolchain`, { timeout: SHORT_CMD_TIMEOUT_MS },
-    )
-    if (stderr) {
-      throw new Error(`Error getting toolchains: ${stderr}`)
-    }
-    else {
-      toolchains = readStdoutT(stdout)
-    }
+  const result = await ruyi.getToolchains()
+  if (result.code == 0) {
+    toolchains = parseStdoutT(result.stdout)
   }
-  catch (e: unknown) {
-    // return error message
-    throw new Error(`Failed to get toolchains: ${formatExecError(e)}`)
+  else {
+    throw new Error(`Failed to get toolchains: ${result.stderr}`)
   }
   return toolchains
 }

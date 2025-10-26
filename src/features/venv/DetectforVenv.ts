@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateVenv module
+ * RuyiSDK VS Code Extension - Venv Module - Venv Detection Utility
  *
  * Provides helpers used by the commands layer:
- * - detectVenv(): Detece Ruyi venvs in the current workspace
+ * - detectVenv(): Detect Ruyi venvs in the current workspace
  * Iterates through 1st and 2nd level subdirectories to find venvs
  * If a subdirectory contains a "bin" subdirectory
  * which contains a "ruyi-activate" file,
@@ -16,7 +16,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-import { getWorkspaceFolderPath } from '../../common/utils'
+import { getWorkspaceFolderPath } from '../../common/helpers'
 
 export function detectVenv(): string[][] {
   const foundVenvs: string[][] = []
@@ -27,6 +27,7 @@ export function detectVenv(): string[][] {
     const subdirectories = fs.readdirSync(workspacePath, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => dirent.name)
+
     const subSubdirectories = subdirectories.flatMap((subdir) => {
       try {
         const subdirPath = path.join(workspacePath, subdir)
@@ -41,7 +42,21 @@ export function detectVenv(): string[][] {
     })
     const allDirsToCheck = [...subdirectories, ...subSubdirectories]
 
+    // Add security check to prevent path traversal
+    const isPathSafe = (pathSegment: string): boolean => {
+      if (!pathSegment || pathSegment.length === 0) return false
+      if (pathSegment.includes('..') || pathSegment.includes('\0')) return false
+      if (pathSegment === '.' || pathSegment.startsWith('/')) return false
+      return true
+    }
+
     for (const dir of allDirsToCheck) {
+      const segments = dir.split('/')
+      if (!segments.every(isPathSafe)) {
+        console.warn(`Skipping unsafe path: ${dir}`)
+        continue
+      }
+
       const binPath = path.join(workspacePath, dir, 'bin')
       const activatePath = path.join(binPath, 'ruyi-activate')
       if (fs.existsSync(activatePath)) {

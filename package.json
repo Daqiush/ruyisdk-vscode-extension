@@ -123,7 +123,7 @@
       },
       {
         "command": "ruyi.venv.switch",
-        "title": "Activate, Deavtivate or Switch Ruyi Virtual Environments",
+        "title": "Activate, Deactivate or Switch Ruyi Virtual Environments",
         "category": "Ruyi"
       }
     ],

@@ -24,24 +24,26 @@
 
 import * as vscode from 'vscode'
 
-import registerCleanADeactivatedVenvCommand from './commands/cleanADeactivatedVenv'
-import registerCreateNewVenvCommand from './commands/createNewVenv'
 import registerDetectCommand from './commands/detect'
-import registerDetectAllVenvsCommand from './commands/detectVenvs'
 import registerHomeCommand from './commands/home'
 import registerInstallCommand from './commands/installRuyi'
 import registerNewsCommands from './commands/news'
 import registerPackagesCommands from './commands/packages'
-import registerSwitchFromVenvsCommand from './commands/switchFromVenvs'
+import registerCleanADeactivatedVenvCommand from './commands/venv/clean'
+import registerCreateNewVenvCommand from './commands/venv/create'
+import registerDetectAllVenvsCommand from './commands/venv/detect'
+import registerTerminalHandlerCommand from './commands/venv/manageTerminal'
+import registerSwitchFromVenvsCommand from './commands/venv/switch'
 
 export function activate(context: vscode.ExtensionContext) {
   // Register commands
-  registerHomeCommand(context)
   registerDetectCommand(context)
+  registerHomeCommand(context)
   registerInstallCommand(context)
   registerNewsCommands(context)
   registerPackagesCommands(context)
 
+  registerTerminalHandlerCommand(context)
   registerDetectAllVenvsCommand(context)
   registerCreateNewVenvCommand(context)
   registerSwitchFromVenvsCommand(context)
@@ -57,7 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     await vscode.commands.executeCommand('ruyi.detect')
-      .then(() => vscode.commands.executeCommand('ruyi.venv.switch'))
+      .then(() => vscode.commands.executeCommand('ruyi.venv.switch', false))
   })
 }
 

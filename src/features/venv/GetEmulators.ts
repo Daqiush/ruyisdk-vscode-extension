@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
- * CreateVenv - GetToolchains module
+ * RuyiSDK VS Code Extension - Venv Module - Venv Creating Utility - Emulator Fetching Helper Functions
  *
  * Provides helpers used by the commands layer:
  * - class Toolchain: represent a Ruyi toolchain
@@ -13,13 +13,7 @@
  * - getEmulators(): Get all Ruyi emulators and return as a Dict-array
  */
 
-import * as cp from 'child_process'
-import * as util from 'util'
-
-import { SHORT_CMD_TIMEOUT_MS } from '../../common/constants'
-import { formatExecError } from '../../common/utils'
-
-const execAsync = util.promisify(cp.exec)
+import ruyi from '../../common/ruyi'
 
 interface EmulatorInfo {
   name: string
@@ -63,16 +57,12 @@ export function parseStdoutE(text: string): EmulatorInfo[] {
 
 export async function getEmulators():
 Promise<{ name: string, semver: string, remarks: string }[] | { errorMsg: string }> {
-  try {
-    const result = await execAsync(
-      'ruyi --porcelain list --category-is emulator', { timeout: SHORT_CMD_TIMEOUT_MS })
-    if (result.stderr) {
-      return { errorMsg: `Failed to get emulators: ${result.stderr}` }
-    }
+  const result = await ruyi.getEmulators()
+  if (result.code == 0) {
     const emus = parseStdoutE(result.stdout)
     return emus
   }
-  catch (e: unknown) {
-    return { errorMsg: `Failed to get emulators: ${formatExecError(e)}` }
+  else {
+    return { errorMsg: `Failed to get emulators: ${result.stderr}` }
   }
 }
