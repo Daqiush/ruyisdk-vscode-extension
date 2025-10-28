@@ -105,6 +105,26 @@
         "title": "Refresh Package List",
         "category": "Ruyi",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "ruyi.venv.detect",
+        "title": "Detect Ruyi Virtual Environments",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.create",
+        "title": "Create a New Ruyi Virtual Environment",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.clean",
+        "title": "Remove a non-activated Ruyi Virtual Environment",
+        "category": "Ruyi"
+      },
+      {
+        "command": "ruyi.venv.switch",
+        "title": "Activate, Deactivate or Switch Ruyi Virtual Environments",
+        "category": "Ruyi"
       }
     ],
     "menus": {
@@ -179,6 +199,7 @@
     "@stylistic/eslint-plugin": "^5.4.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/semver": "^7.7.1",
     "@types/vscode": "^1.88.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
@@ -188,8 +209,7 @@
     "eslint-plugin-import": "^2.32.0",
     "globals": "^16.4.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0",
-    "@types/semver": "^7.7.1"    
+    "typescript-eslint": "^8.46.0"
   },
   "dependencies": {
     "semver": "^7.7.3"
